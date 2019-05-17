@@ -8,6 +8,7 @@
 // +----------------------------------------------------------------------
 
 namespace app\index\controller;
+use app\poetry\model\MyMessage;
 
 /**
  * 前台首页控制器
@@ -15,8 +16,22 @@ namespace app\index\controller;
  */
 class Index extends Home
 {
+
+    /**
+     * Notes：首页
+     * Author：张恩来<1059008079@qq.com>
+     */
     public function index()
     {
+        return $this->fetch();
+    }
 
+    /**
+     * Notes：我的信息
+     * Author：张恩来<1059008079@qq.com>
+     */
+    public function myInformation()
+    {
+        return $this->fetch('myInformation');
     }
 }

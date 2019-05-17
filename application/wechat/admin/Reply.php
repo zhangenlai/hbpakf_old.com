@@ -143,17 +143,15 @@ class Reply extends Admin
             $data = $this->request->post();
             // 验证
             $result = $this->validate($data, 'WeReply');
-            if ($result === true && $data['type'] != 'text') {
                 if ($result === true && $data['type'] != 'text') {
                     $data['content'] = $data['contentOther'];
                 }else if ($result === true && $data['type'] == 'text'){
                     $data['content'] = $data['contentText'];
                 }
-            }
             // 验证失败 输出错误信息
             if (true !== $result) return $this->error($result);
-
-            if (WeReplyModel::update($data)) {
+            $weReply = WeReplyModel::get($data['id']);
+            if ($weReply->save($data)) {
                 return $this->success('编辑成功');
             } else {
                 return $this->error('编辑失败');
@@ -165,12 +163,13 @@ class Reply extends Admin
         if (!$we_reply_info) {
             return $this->error('内容不存在');
         }
+        $material = [];
         if ($we_reply_info['type'] == 'text'){
             $we_reply_info['contentText'] = $we_reply_info['content'];
         }else {
             //给下拉框赋默认值
             $we_reply_info['contentOther'] = $we_reply_info['content'];
-            $we_reply_info['contentOtherOne'] = [
+            $material = [
                 $we_reply_info['content'] => WeMaterialModel::get($we_reply_info['content'])->value('name'),
             ];
         }
@@ -186,7 +185,7 @@ class Reply extends Admin
                 ['radio', 'mode', '匹配模式', '', ['模糊搜索', '完整匹配'], 1],
             ])
             ->addLinkage('type','回复类型','', ['text' => '文字内容', 'image' => '图片素材', 'voice' => '声音素材', 'video' => '视频素材', 'article' => '图文(文章)素材', 'news' => '图文(外链)素材'], 'text',url('getMaterial'), 'contentOther')
-            ->addSelect('contentOther','回复素材ID','',$we_reply_info['contentOtherOne'])
+            ->addSelect('contentOther','回复素材ID','',$material)
             ->addFormItems([
                 ['textarea', 'contentText', '回复内容'],
                 ['date', 'expires_date', '有效期', '默认有效期为30天之后。小于或等于当前日期 <code>' . date('Y-m-d') . '</code> 则表示过期', $default_expires_date, 'yyyy-mm-dd'],

@@ -82,7 +82,8 @@ class Diy extends Admin
             // 保存数据
             if ($this->request->isPost()) {
                 $data = $this->request->post();
-                if (false === DiyModel::save($data)) {
+                $diyModel = DiyModel::get($data['id']);
+                if (false === $diyModel->save($data)) {
                     $this->error('更新失败');
                 }
                 $this->success('更新成功');
