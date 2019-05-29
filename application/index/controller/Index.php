@@ -25,13 +25,4 @@ class Index extends Home
     {
         return $this->fetch();
     }
-
-    /**
-     * Notes：我的信息
-     * Author：张恩来<1059008079@qq.com>
-     */
-    public function myInformation()
-    {
-        return $this->fetch('myInformation');
-    }
 }

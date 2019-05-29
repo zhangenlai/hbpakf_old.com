@@ -3,6 +3,7 @@ namespace app\wechat\home;
 
 use app\index\controller\Home;
 use EasyWeChat\Factory;
+use Symfony\Component\Cache\Simple\RedisCache;
 
 class Index extends Home
 {
@@ -13,6 +14,15 @@ class Index extends Home
      */
     public function index()
     {
+//        // 创建 redis 实例
+//        $redis = new Redis();
+//        $redis->connect('redis_host', 6379);
+//        // 创建缓存实例
+//        $cache = new RedisCache($redis);
+//        // 替换应用中的缓存
+//        dump($this->app->rebind('cache', $cache));
+
+
         $options = [
             'log' => [
                 'default' => 'dev', // 默认使用的 channel，生产环境可以改为下面的 prod
@@ -35,7 +45,7 @@ class Index extends Home
         $wechatConfig = module_config('wechat');
         $wechatConfig = array_merge($wechatConfig,$options);
         $this->app = Factory::officialAccount($wechatConfig);
-//        dump($this->app);die;
+
         $this->app->server->push(function ($message) {
             if ($message['MsgType'] == 'event') {
                 $class = '\\app\\wechat\\home\\Event';

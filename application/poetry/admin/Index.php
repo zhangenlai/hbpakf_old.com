@@ -50,7 +50,7 @@ class Index extends Admin
 //                ['create_time','添加时间'],
 //                ['right_button','操作']
             ])
-            ->addTopButton('delete')
+            ->addTopButtons('add,delete')
             ->addTopButton('custom',$btn_gather,[])
             ->addRightButton('delete')
             ->addRightButton('custom',$btn_look,[])
@@ -102,7 +102,7 @@ class Index extends Admin
             ];
             $range = '.left';
             $rt = QueryList::get($url)->rules($rules)->range($range)->queryData();
-
+            dump($rt);die;
             if (!empty($rt)) {
                 foreach ($rt as $k => $v) {
                     if (!empty($v['title'] && !empty($v['link']) && !empty($v['dynasty']) && !empty($v['author'] && !empty($v['content']) && !empty($v['tags'])))) {
@@ -123,5 +123,29 @@ class Index extends Admin
             $nextPage = QueryList::get($url)->rules(['nextPage' => ['.pagesright>.amore', 'href']])->queryData();
             $nextPage = $nextPage[0]['nextPage'];
         }
+    }
+
+    /**
+     * Notes：新增
+     * Author：张恩来<1059008079@qq.com>
+     */
+    public function add()
+    {
+        if($this->request->isPost()){
+            $data = $this->request->post();
+            $data['tags'] = json_encode($data['tags'],JSON_UNESCAPED_UNICODE);
+        }
+
+        return ZBuilder::make('from')
+            ->addFormItems([
+                ['text:4','title','标题'],
+                ['text:4','dynasty','朝代'],
+                ['text:4','author','作者'],
+                ['textarea:4','content','内容','换行用 br '],
+                ['text:4','tags','标签','用,分割'],
+                ['textarea:4','translate','注释/译文'],
+                ['textarea:4','review','赏析'],
+            ])
+            ->fetch();
     }
 }

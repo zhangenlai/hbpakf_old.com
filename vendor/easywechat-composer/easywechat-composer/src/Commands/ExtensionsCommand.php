@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+//declare(strict_types=1);
 
 /*
  * This file is part of the EasyWeChatComposer.
@@ -58,6 +58,7 @@ class ExtensionsCommand extends BaseCommand
      */
     protected function getRows($name, $extension)
     {
-        return [$name, implode("\n", $extension['observers'] ?? [])];
+//        return [$name, implode("\n", $extension['observers'] ?? [])];
+        return [$name, implode("\n", $extension['observers'])];
     }
 }
