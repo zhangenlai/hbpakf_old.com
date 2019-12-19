@@ -20,7 +20,6 @@ use think\facade\Cache;
 use think\Db;
 use think\facade\App;
 use think\helper\Hash;
-use EasyWeChat\Factory;
 
 /**
  * 后台公共控制器
@@ -28,7 +27,6 @@ use EasyWeChat\Factory;
  */
 class Admin extends Common
 {
-    public $wechatApp;
     /**
      * 初始化
      * @author 蔡伟明 <314013107@qq.com>
@@ -37,30 +35,6 @@ class Admin extends Common
     protected function initialize()
     {
         parent::initialize();
-        //获取微信app信息
-        $options = [
-            'log' => [
-                'default' => 'dev', // 默认使用的 channel，生产环境可以改为下面的 prod
-                'channels' => [
-                    // 测试环境
-                    'dev' => [
-                        'driver' => 'single',
-                        'path' => '../runtime/log/wechat/easywechat.log',
-                        'level' => 'debug',
-                    ],
-                    // 生产环境
-                    'prod' => [
-                        'driver' => 'daily',
-                        'path' => './runtime/log/wechat/easywechat.log',
-                        'level' => 'info',
-                    ],
-                ],
-            ],
-        ];
-        $wechatConfig = module_config('wechat');
-        $wechatConfig = array_merge($options, $wechatConfig);
-        $this->wechatApp = Factory::officialAccount($wechatConfig);
-
         // 是否拒绝ie浏览器访问
         if (config('system.deny_ie') && get_browser_type() == 'ie') {
             $this->redirect('admin/ie/index');

@@ -30,12 +30,8 @@ class MemcachedSessionHandlerTest extends TestCase
 
     protected $memcached;
 
-    protected function setUp()
+    protected function setUp(): void
     {
-        if (\defined('HHVM_VERSION')) {
-            $this->markTestSkipped('PHPUnit_MockObject cannot mock the Memcached class on HHVM. See https://github.com/sebastianbergmann/phpunit-mock-objects/pull/289');
-        }
-
         parent::setUp();
 
         if (version_compare(phpversion('memcached'), '2.2.0', '>=') && version_compare(phpversion('memcached'), '3.0.0b1', '<')) {
@@ -49,7 +45,7 @@ class MemcachedSessionHandlerTest extends TestCase
         );
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->memcached = null;
         $this->storage = null;
@@ -66,7 +62,7 @@ class MemcachedSessionHandlerTest extends TestCase
         $this->memcached
             ->expects($this->once())
             ->method('quit')
-            ->will($this->returnValue(true))
+            ->willReturn(true)
         ;
 
         $this->assertTrue($this->storage->close());
@@ -89,7 +85,7 @@ class MemcachedSessionHandlerTest extends TestCase
             ->expects($this->once())
             ->method('set')
             ->with(self::PREFIX.'id', 'data', $this->equalTo(time() + self::TTL, 2))
-            ->will($this->returnValue(true))
+            ->willReturn(true)
         ;
 
         $this->assertTrue($this->storage->write('id', 'data'));
@@ -101,7 +97,7 @@ class MemcachedSessionHandlerTest extends TestCase
             ->expects($this->once())
             ->method('delete')
             ->with(self::PREFIX.'id')
-            ->will($this->returnValue(true))
+            ->willReturn(true)
         ;
 
         $this->assertTrue($this->storage->destroy('id'));

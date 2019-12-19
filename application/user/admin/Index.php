@@ -45,7 +45,7 @@ class Index extends Admin
         }
 
         // 数据列表
-        $data_list = UserModel::where($map)->order('id desc')->paginate();
+        $data_list = UserModel::where($map)->order('sort,role,id desc')->paginate();
 
         // 授权按钮
         $btn_access = [
@@ -63,30 +63,17 @@ class Index extends Admin
 
         // 使用ZBuilder快速创建数据表格
         return ZBuilder::make('table')
-            ->addFilter('role',$role_list)
-            ->addFilter('subscribe_scene',['ADD_SCENE_SEARCH'=>'公众号搜索','ADD_SCENE_ACCOUNT_MIGRATION'=>'公众号迁移','ADD_SCENE_PROFILE_CARD'=>'名片分享','ADD_SCENE_QR_CODE'=>'扫描二维码','ADD_SCENE_PROFILE_LINK'=>'图文页内名称点击','ADD_SCENE_PROFILE_ITEM'=>'图文页右上角菜单','ADD_SCENE_PAID'=>'支付后关注','ADD_SCENE_OTHERS'=>'其他'])
             ->setPageTitle('用户管理') // 设置页面标题
             ->setTableName('admin_user') // 设置数据表名
             ->setSearch(['id' => 'ID', 'username' => '用户名', 'email' => '邮箱']) // 设置搜索参数
             ->addColumns([ // 批量添加列
                 ['id', 'ID'],
                 ['username', '用户名'],
-                ['avatar', '头像','callback', function($value, $data){
-                    if (!empty($data['avatar'])) {
-                        return "<img src='" . $data['avatar'] . "' width='50' />";
-                    }else {
-                        return '暂无头像';
-                    }
-                }, '__data__'],
                 ['nickname', '昵称'],
                 ['role', '角色', $role_list],
                 ['email', '邮箱'],
                 ['mobile', '手机号'],
-                ['sex','性别',['未知','男','女']],
-                ['city','城市'],
-                ['subscribe_scene','关注来源',['ADD_SCENE_SEARCH'=>'公众号搜索','ADD_SCENE_ACCOUNT_MIGRATION'=>'公众号迁移','ADD_SCENE_PROFILE_CARD'=>'名片分享','ADD_SCENE_QR_CODE'=>'扫描二维码','ADD_SCENE_PROFILE_LINK'=>'图文页内名称点击','ADD_SCENE_PROFILE_ITEM'=>'图文页右上角菜单','ADD_SCENE_PAID'=>'支付后关注','ADD_SCENE_OTHERS'=>'其他']],
-                ['subscribe_state','关注状态','status','',['已关注:success','已取关:danger']],
-                ['create_time', '创建时间'],
+                ['create_time', '创建时间', 'datetime'],
                 ['status', '状态', 'switch'],
                 ['right_button', '操作', 'btn']
             ])
@@ -359,7 +346,12 @@ class Index extends Admin
 
                     // 调用后置方法
                     if (isset($curr_access_nodes['model_name']) && $curr_access_nodes['model_name'] != '') {
-                        $class = "app\\{$module}\\model\\".$curr_access_nodes['model_name'];
+                        if (strpos($curr_access_nodes['model_name'], '/')) {
+                            list($module, $model_name) = explode('/', $curr_access_nodes['model_name']);
+                        } else {
+                            $model_name = $curr_access_nodes['model_name'];
+                        }
+                        $class = "app\\{$module}\\model\\".$model_name;
                         $model = new $class;
                         try{
                             $model->afterAccessUpdate($post);
@@ -385,7 +377,12 @@ class Index extends Admin
             } else {
                 $nodes = [];
                 if (isset($curr_access_nodes['model_name']) && $curr_access_nodes['model_name'] != '') {
-                    $class = "app\\{$module}\\model\\".$curr_access_nodes['model_name'];
+                    if (strpos($curr_access_nodes['model_name'], '/')) {
+                        list($module, $model_name) = explode('/', $curr_access_nodes['model_name']);
+                    } else {
+                        $model_name = $curr_access_nodes['model_name'];
+                    }
+                    $class = "app\\{$module}\\model\\".$model_name;
                     $model = new $class;
 
                     try{

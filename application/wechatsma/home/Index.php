@@ -3,7 +3,9 @@ namespace app\wechatsma\home;
 
 use app\index\controller\Home;
 use EasyWeChat\Factory;
+use think\Db;
 use think\Session;
+use app\user\model\User;
 
 class Index extends Home
 {
@@ -53,15 +55,71 @@ class Index extends Home
      * Notes：小程序登录code
      * Author：张恩来<1059008079@qq.com>
      */
-    public function getCode()
+    public function getCode($code =null)
     {
         if ($this->request->isPost()) {
             $data = $this->request->post();
             if (empty($data)) return 1;       //数据为空返回 1 错误码
             $result = $this->app->auth->session((string)$data['code']);
-            session(md5($result['openid']),json_encode($result));
+
             $result['session_keyData'] = md5($result['openid']);
-            echo json_encode($result);
+            return $result;
+        }
+    }
+
+
+    /**
+     * 获取用户基本信息  (存到后台数据库)
+     */
+    public function getUserInfo()
+    {
+        if ($this->request->isPost()){
+            $data = $this->request->post();
+            $sessionKey = $this->getCode($data['code'])['session_key'];
+            //解密数据
+            $data = [
+                'session_key' => $sessionKey,
+                'details' => [
+                    'iv' => $data['res']['iv'],
+                    'encryptedData' => $data['res']['encryptedData'],
+                ]
+            ];
+            $result = $this->getEncData($data);
+            $data = json_decode($result,true);
+            if (empty($data)){
+                return $result;
+            }
+
+            $userData = [
+                'openidMini' => $data['openId'],
+                'username' => $data['nickName'],
+                'nickname' => $data['nickName'],
+                'password' => '$2y$10$Brw6wmuSLIIx3Yabid8/Wu5l8VQ9M/H/CG3C9RqN9dUCwZW3ljGOK', //admin
+                'avatar' => $data['avatarUrl'],
+                'sex' => $data['gender'],
+                'city' => $data['city'],
+                'country' => $data['country'],
+                'province' => $data['province'],
+                'language' => $data['language'],
+                'role' => 3, //小程序用户
+                'status' => 1,
+            ];
+
+            //如果存在unionid的话
+            if (!empty($user['unionid'])){
+                $userData['unionid'] = $user['unionid'];
+            }
+            $userModel = new User();
+            $userData['signup_ip'] = $userModel->setSignupIpAttr();
+            //查询是否已存在
+            if (!empty($user = User::get(['openidMini'=>$data['openId']]))){
+                $user->isUpdate(true)->save($userData);     //更新
+            }else {
+                User::create($userData);    //新增
+            }
+
+
+            return json_encode($userData);
         }
     }
 

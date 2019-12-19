@@ -104,8 +104,8 @@ trait HasHttpRequests
     /**
      * Add a middleware.
      *
-     * @param callable    $middleware
-     * @param string|null $name
+     * @param callable $middleware
+     * @param string   $name
      *
      * @return $this
      */
@@ -137,7 +137,9 @@ trait HasHttpRequests
      * @param string $method
      * @param array  $options
      *
-     * @return \Psr\Http\Message\ResponseInterface|\EasyWeChat\Kernel\Support\Collection|array|object|string
+     * @return \Psr\Http\Message\ResponseInterface
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function request($url, $method = 'GET', $options = []): ResponseInterface
     {
@@ -218,10 +220,10 @@ trait HasHttpRequests
      */
     protected function getGuzzleHandler()
     {
-        if (property_exists($this, 'app') && isset($this->app['guzzle_handler']) && is_string($this->app['guzzle_handler'])) {
-            $handler = $this->app['guzzle_handler'];
-
-            return new $handler();
+        if (property_exists($this, 'app') && isset($this->app['guzzle_handler'])) {
+            return is_string($handler = $this->app->raw('guzzle_handler'))
+                        ? new $handler()
+                        : $handler;
         }
 
         return \GuzzleHttp\choose_handler();

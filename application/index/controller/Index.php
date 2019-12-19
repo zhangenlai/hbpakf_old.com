@@ -8,7 +8,7 @@
 // +----------------------------------------------------------------------
 
 namespace app\index\controller;
-use app\poetry\model\MyMessage;
+use GatewayWorker\Lib\Gateway;
 
 /**
  * 前台首页控制器
@@ -16,13 +16,36 @@ use app\poetry\model\MyMessage;
  */
 class Index extends Home
 {
-
-    /**
-     * Notes：首页
-     * Author：张恩来<1059008079@qq.com>
-     */
     public function index()
     {
+
+        $pageContents = '测试测试13212312341234123w测试测试14100212341234123X,测试测试测试15612312341234123R';
+        $reg = '/[\d]{17}[\D|\d]/i';
+        preg_match_all( $reg , $pageContents , $results );
+        $arr = [];
+
+        if  (!empty($results)){
+            if (count($results[0]) > 1){
+                foreach ($results[0] as $w => $q){
+                    array_push($arr,$q);
+                }
+            }else {
+                if (count($results[0]) == 1){
+                    array_push($arr, $results[0][0]);
+                }
+            }
+        }
+        dump($arr);die;
+
         return $this->fetch();
+    }
+
+    public function index2()
+    {
+        $data = [
+            'type' => 'message',
+            'content' => '123',
+        ];
+        Gateway::sendToAll(json_encode($data));
     }
 }

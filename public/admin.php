@@ -24,8 +24,6 @@ define('APP_PATH', __DIR__ . '/../application/');
 // 定义入口为admin
 define('ENTRANCE', 'admin');
 
-// 自定义日志目录
-define('LOG_PATH', __DIR__ . '');
 // 加载基础文件
 require __DIR__ . '/../thinkphp/base.php';
 

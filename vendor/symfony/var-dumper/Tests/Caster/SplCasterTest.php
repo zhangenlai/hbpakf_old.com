@@ -50,12 +50,12 @@ SplFileInfo {
 %A}
 EOTXT
             ],
-            ['https://google.com/about', <<<'EOTXT'
+            ['https://example.com/about', <<<'EOTXT'
 SplFileInfo {
-%Apath: "https://google.com"
+%Apath: "https://example.com"
   filename: "about"
   basename: "about"
-  pathname: "https://google.com/about"
+  pathname: "https://example.com/about"
   extension: ""
   realPath: false
 %A}
@@ -166,9 +166,6 @@ EOTXT;
 
     public function testCastArrayObject()
     {
-        if (\defined('HHVM_VERSION')) {
-            $this->markTestSkipped('HHVM as different internal details.');
-        }
         $var = new \ArrayObject([123]);
         $var->foo = 234;
 
@@ -188,9 +185,6 @@ EOTXT;
 
     public function testArrayIterator()
     {
-        if (\defined('HHVM_VERSION')) {
-            $this->markTestSkipped('HHVM as different internal details.');
-        }
         $var = new MyArrayIterator([234]);
 
         $expected = <<<EOTXT
@@ -205,9 +199,28 @@ Symfony\Component\VarDumper\Tests\Caster\MyArrayIterator {
 EOTXT;
         $this->assertDumpEquals($expected, $var);
     }
+
+    public function testBadSplFileInfo()
+    {
+        $var = new BadSplFileInfo();
+
+        $expected = <<<EOTXT
+Symfony\Component\VarDumper\Tests\Caster\BadSplFileInfo {
+  ⚠: "The parent constructor was not called: the object is in an invalid state"
+}
+EOTXT;
+        $this->assertDumpEquals($expected, $var);
+    }
 }
 
 class MyArrayIterator extends \ArrayIterator
 {
     private $foo = 123;
+}
+
+class BadSplFileInfo extends \SplFileInfo
+{
+    public function __construct()
+    {
+    }
 }

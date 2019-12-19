@@ -108,19 +108,37 @@ class System extends Admin
                 // 数据列表
                 $data_list = ConfigModel::where($map)
                     ->order('sort asc,id asc')
-                    ->column('name,title,tips,type,value,options,ajax_url,next_items,param,table,level,key,option,ak,format');
+                    ->field('group', true)
+                    ->select();
+                $data_list = $data_list->toArray();
 
                 foreach ($data_list as &$value) {
                     // 解析options
                     if ($value['options'] != '') {
                         $value['options'] = parse_attr($value['options']);
                     }
-                }
-
-                // 默认模块列表
-                if (isset($data_list['home_default_module'])) {
-                    $list_module['index'] = '默认';
-                    $data_list['home_default_module']['options'] = array_merge($list_module, ModuleModel::getModule());
+                    // 默认模块列表
+                    if ($value['name'] == 'home_default_module') {
+                        $value['options'] = array_merge(['index' => '默认'], ModuleModel::getModule());
+                    }
+                    switch ($value['type']) {
+                        // 日期时间
+                        case 'date':
+                            $value['value'] = $value['value'] != '' ? date('Y-m-d', $value['value']) : '';
+                            break;
+                        case 'time':
+                            $value['value'] = $value['value'] != '' ? date('H:i:s', $value['value']) : '';
+                            break;
+                        case 'datetime':
+                            $value['value'] = $value['value'] != '' ? date('Y-m-d H:i:s', $value['value']) : '';
+                            break;
+                        case 'linkages':
+                            $value['token'] = $this->createLinkagesToken($value['table'], $value['option'], $value['key']);
+                            break;
+                        case 'colorpicker':
+                            $value['mode'] = 'rgba';
+                            break;
+                    }
                 }
 
                 // 使用ZBuilder快速创建表单
@@ -149,5 +167,20 @@ class System extends Admin
                     ->fetch();
             }
         }
+    }
+
+    /**
+     * 创建快速多级联动Token
+     * @param string $table 表名
+     * @param string $option
+     * @param string $key
+     * @author 蔡伟明 <314013107@qq.com>
+     * @return bool|string
+     */
+    private function createLinkagesToken($table = '', $option = '', $key = '')
+    {
+        $table_token = substr(sha1($table.'-'.$option.'-'.$key.'-'.session('user_auth.last_login_ip').'-'.UID.'-'.session('user_auth.last_login_time')), 0, 8);
+        session($table_token, ['table' => $table, 'option' => $option, 'key' => $key]);
+        return $table_token;
     }
 }

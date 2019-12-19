@@ -37,7 +37,7 @@ class Message
                 return $this->reply($data);
         }else {
             $data = WeReply::where('keyword','like','%'.$this->message['Content'].'%',['msg_type'=>'text','status'=>1])->order('id desc')->find();
-            if (!empty($data) && $data['mode'] == 2){     //模糊搜索
+            if (!empty($data) && $data['mode'] == 0){     //模糊搜索
                 return $this->reply($data);
             }
         }

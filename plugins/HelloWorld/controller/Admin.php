@@ -9,7 +9,6 @@
 
 namespace plugins\HelloWorld\controller;
 
-use think\Session;
 use app\common\builder\ZBuilder;
 use app\common\controller\Common;
 use plugins\HelloWorld\model\HelloWorld;
@@ -23,7 +22,7 @@ class Admin extends Common
 {
     /**
      * 插件管理页
-     * @author 张恩来 <1059008079@qq.com>
+     * @author 蔡伟明 <314013107@qq.com>
      * @return mixed
      * @throws \think\Exception
      * @throws \think\exception\DbException
@@ -39,9 +38,20 @@ class Admin extends Common
 
         // 自定义按钮
         $btnOne = [
-            'title'  => '获取诗词信息(30条)',
-            'icon'   => 'fa fa-file',
-            'href'   => plugin_url('HelloWorld/Admin/getPoetry'),
+            'title'  => '自定义按钮1',
+            'icon'   => 'fa fa-list',
+            'href'   => plugin_url('HelloWorld/Admin/testTable'),
+            'target' => '_blank',
+        ];
+        $btnTwo = [
+            'title' => '自定义按钮2',
+            'icon'  => 'fa fa-user',
+            'href'  => plugin_url('HelloWorld/Admin/testForm', ['name' => 'molly', 'age' => 12]),
+        ];
+        $btnThree = [
+            'title' => '自定义页面',
+            'icon'  => 'fa fa-file',
+            'href'  => plugin_url('HelloWorld/Admin/testPage'),
         ];
         $btnBack['title'] = '返回插件列表';
         $btnBack['icon'] = 'fa fa-reply';
@@ -60,12 +70,17 @@ class Admin extends Common
                 ['right_button', '操作', 'btn']
             ])
             ->addTopButton('custom', $btnBack)
-            ->addTopButton('add', ['plugin_name' => 'HelloWorld'],[],true)
-            ->addTopButtons('delete')
+            ->addTopButton('add', ['plugin_name' => 'HelloWorld'])
+            ->addTopButtons('enable,disable,delete')
             ->addTopButton('custom', $btnOne)
-            ->addRightButton('edit', ['plugin_name' => 'HelloWorld',],[])
-            ->addRightButtons('delete')
-            ->setTableName('plugin_poetry')
+            ->addTopButton('custom', $btnTwo)
+            ->addTopButton('custom', $btnThree)
+            ->addRightButton('edit', ['plugin_name' => 'HelloWorld'])
+            ->addRightButtons('enable,disable,delete')
+            ->addRightButton('custom', $btnOne)
+            ->addRightButton('custom', $btnTwo)
+            ->addRightButton('custom', $btnThree)
+            ->setTableName('plugin_hello')
             ->setRowList($data_list)
             ->setPages($page)
             ->fetch();
@@ -73,39 +88,41 @@ class Admin extends Common
 
     /**
      * 新增
-     * @author 张恩来 <1059008079@qq.com>
+     * @author 蔡伟明 <314013107@qq.com>
      */
     public function add()
     {
         if ($this->request->isPost()) {
             $data = $this->request->post();
             // 验证数据
-            $validate = new HelloWorldValidate();
-            if(!$validate->check($data)){
+            $result = $this->validate($data, [
+                'name|出处' => 'require',
+                'said|名言' => 'require',
+            ]);
+            if(true !== $result){
                 // 验证失败 输出错误信息
-                $this->error($validate->getError());
+                $this->error($result);
             }
 
             // 插入数据
             if (HelloWorld::create($data)) {
-                $this->success('新增成功', null,'_parent_reload');
+                $this->success('新增成功', cookie('__forward__'));
             } else {
-                $this->error('新增失败',null,'_parent_reload');
+                $this->error('新增失败');
             }
         }
 
         // 使用ZBuilder快速创建表单
         return ZBuilder::make('form')
-            ->addFormItems([
-                ['text', 'name', '出处'],
-                ['text', 'name', '出处'],
-            ])
+            ->setPageTitle('新增')
+            ->addFormItem('text', 'name', '出处')
+            ->addFormItem('text', 'said', '名言')
             ->fetch();
     }
 
     /**
      * 编辑
-     * @author 张恩来 <1059008079@qq.com>
+     * @author 蔡伟明 <314013107@qq.com>
      */
     public function edit()
     {
@@ -143,8 +160,55 @@ class Admin extends Common
     }
 
     /**
+     * 插件自定义方法
+     * @author 蔡伟明 <314013107@qq.com>
+     * @return mixed
+     * @throws \think\Exception
+     */
+    public function testTable()
+    {
+        // 使用ZBuilder快速创建表单
+        return ZBuilder::make('table')
+            ->setPageTitle('插件自定义方法(列表)')
+            ->setSearch(['said' => '名言', 'name' => '出处'])
+            ->addColumn('id', 'ID')
+            ->addColumn('said', '名言')
+            ->addColumn('name', '出处')
+            ->addColumn('status', '状态', 'switch')
+            ->addColumn('right_button', '操作', 'btn')
+            ->setTableName('plugin_hello')
+            ->fetch();
+    }
+
+    /**
+     * 插件自定义方法
+     * 这里的参数是根据插件定义的按钮链接按顺序设置
+     * @param string $id
+     * @param string $table
+     * @param string $name
+     * @param string $age
+     * @author 蔡伟明 <314013107@qq.com>
+     * @return mixed
+     * @throws \think\Exception
+     */
+    public function testForm($id = '', $table = '', $name = '', $age = '')
+    {
+        if ($this->request->isPost()) {
+            $data = $this->request->post();
+            halt($data);
+        }
+
+        // 使用ZBuilder快速创建表单
+        return ZBuilder::make('form')
+            ->setPageTitle('插件自定义方法(表单)')
+            ->addFormItem('text', 'name', '出处')
+            ->addFormItem('text', 'said', '名言')
+            ->fetch();
+    }
+
+    /**
      * 自定义页面
-     * @author 张恩来 <1059008079@qq.com>
+     * @author 蔡伟明 <314013107@qq.com>
      * @return mixed
      */
     public function testPage()
@@ -154,7 +218,7 @@ class Admin extends Common
 
         // 2.使用已封装好的快捷方法，该方法只用于加载插件模板
         // 如果不指定模板名称，则自动加载插件view目录下与当前方法名一致的模板
-        return $this->pluginView('','tpl');
+        return $this->pluginView();
 //         return $this->pluginView('index'); // 指定模板名称
 //         return $this->pluginView('', 'tpl'); // 指定模板后缀
     }

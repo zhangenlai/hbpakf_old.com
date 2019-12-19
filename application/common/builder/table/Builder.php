@@ -147,7 +147,7 @@ class Builder extends ZBuilder
         '_css_files'         => [],       // css文件
         '_select_list'       => [],       // 顶部下拉菜单列表
         '_filter_time'       => [],       // 时间段筛选
-        'empty_tips'         => '暂时没有数据哦', // 没有数据时的提示信息
+        'empty_tips'         => '暂无数据', // 没有数据时的提示信息
         '_search_area'       => [],       // 搜索区域
         '_search_area_url'   => '',       // 搜索区域url
         '_search_area_op'    => '',       // 搜索区域匹配方式
@@ -221,14 +221,15 @@ class Builder extends ZBuilder
      * 设置页面提示
      * @param string $tips 提示信息
      * @param string $type 提示类型：success/info/warning/danger，默认info
+     * @param string $pos 提示位置：top,button
      * @author 蔡伟明 <314013107@qq.com>
      * @return $this
      */
-    public function setPageTips($tips = '', $type = 'info')
+    public function setPageTips($tips = '', $type = 'info', $pos = 'top')
     {
         if ($tips != '') {
-            $this->_vars['page_tips'] = $tips;
-            $this->_vars['tips_type'] = $type;
+            $this->_vars['page_tips_'.$pos] = $tips;
+            $this->_vars['tips_type'] = $type != '' ? trim($type) : 'info';
         }
         return $this;
     }
@@ -347,7 +348,7 @@ class Builder extends ZBuilder
         if ($field != '' && !empty($list)) {
             $this->_vars['filter_columns'][] = $field;
             $this->_filter_type[$field] = $type;
-            $this->_filter_list[$field] = md5('_filter_list_'.$this->_module.'_'.$this->_controller.'_'.$this->_action.'_'.$field);
+            $this->_filter_list[$field] = md5('_filter_list_'.$this->_module.'_'.$this->_controller.'_'.$this->_action.'_'.session('user_auth.uid').'_'.$field);
             Cache::set($this->_filter_list[$field], $list);
 
             // 处理默认选项和值
@@ -1476,17 +1477,15 @@ class Builder extends ZBuilder
      */
     private function getData($index = '', $field = '')
     {
-        if ($this->data instanceof \think\paginator) {
-            if (is_object(current($this->data->getIterator()))) {
+        if (is_object($this->data) && is_object(current($this->data->getIterator()))) {
+            try {
                 $result = $this->data[$index]->getData($field);
-            } else {
-                $result = $this->data[$index][$field];
+            } catch (\Exception $e) {
+                $result = isset($this->data[$index][$field]) ? $this->data[$index][$field] : '';
             }
             return $result;
-        } elseif ($this->data instanceof \think\model\Collection) {
-            return $this->data[$index]->getData($field);
         } else {
-            return $this->data[$index][$field];
+            return isset($this->data[$index][$field]) ? $this->data[$index][$field] : '';
         }
     }
 
@@ -1740,14 +1739,27 @@ class Builder extends ZBuilder
                             // 是否能匹配到条件
                             $_button_match = true;
                             foreach ($replace_right_button['maps'] as $condition) {
-                                if (is_callable($condition[0])) {
+                                if (is_string($condition[0])) {
+                                    if (!isset($row[$condition[0]])) {
+                                        $_button_match = false; continue;
+                                    }
+                                    $_button_match = $this->parseCondition($row, $condition) ? $_button_match : false;
+                                } elseif (is_callable($condition[0])) {
                                     $_button_match = call_user_func($condition[0], $row) ? $_button_match : false;
-                                    continue;
                                 }
-                                if (!isset($row[$condition[0]])) {
-                                    $_button_match = false; continue;
+                            }
+
+                            // 替换按钮内容支持数据变量
+                            if ($replace_right_button['content'] != '') {
+                                if (preg_match_all('/__(.*?)__/', $replace_right_button['content'], $matches)) {
+                                    $replace_to = [];
+                                    $pattern    = [];
+                                    foreach ($matches[1] as $match) {
+                                        $pattern[]    = '/__'. $match .'__/i';
+                                        $replace_to[] = $row[$match];
+                                    }
+                                    $replace_right_button['content'] = preg_replace($pattern, $replace_to, $replace_right_button['content']);
                                 }
-                                $_button_match = $this->parseCondition($row, $condition) ? $_button_match : false;
                             }
 
                             if ($_button_match) {

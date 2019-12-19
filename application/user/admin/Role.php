@@ -61,7 +61,7 @@ class Role extends Admin
                         return isset($list_module[$value]) ? $list_module[$value] : '模块不存在';
                     }
                 }, MenuModel::where('pid', 0)->column('id,title')],
-                ['create_time', '创建时间'],
+                ['create_time', '创建时间', 'datetime'],
                 ['access', '是否可登录后台', 'switch'],
                 ['status', '状态', 'switch'],
                 ['right_button', '操作', 'btn']
@@ -123,7 +123,7 @@ class Role extends Admin
         // 菜单列表
         $menus = cache('access_menus');
         if (!$menus) {
-            $modules = Db::name('admin_module')->where('status', 1)->column('name');
+            $modules = Db::name('admin_module')->where('status', 1)->column('name,title');
             $map     = [];
             // 非超级管理员角色，只能分配当前角色所拥有的权限
             if (session('user_auth.role') != 1) {
@@ -131,12 +131,32 @@ class Role extends Admin
                 $menu_auth = json_decode($menu_auth, true);
                 $map[]     = ['id', 'in', $menu_auth];
             }
-            $menus = MenuModel::where('module', 'in', $modules)
+
+            // 当前用户能分配的所有菜单
+            $menus = MenuModel::where('module', 'in', array_keys($modules))
                 ->where($map)
-                ->order('sort,id')
-                ->column('id,pid,sort,url_value,title,icon');
-            $menus = Tree::toLayer($menus);
-            $menus = $this->buildJsTree($menus);
+                ->order('module,sort,id')
+                ->column('id,pid,sort,url_value,title,icon,module');
+
+            // 按模块分组菜单
+            $moduleMenus = [];
+            foreach ($menus as $key => $menu) {
+                if (!isset($moduleMenus[$menu['module']])) {
+                    $moduleMenus[$menu['module']] = [
+                        'title' => isset($modules[$menu['module']]) ? $modules[$menu['module']] : '未知',
+                        'menus' => [$menu]
+                    ];
+                } else {
+                    $moduleMenus[$menu['module']]['menus'][] = $menu;
+                }
+            }
+
+            // 层级化每个模块的菜单
+            foreach ($moduleMenus as $key => $module) {
+                $menu = Tree::toLayer($module['menus']);
+                $moduleMenus[$key]['menus'] = $this->buildJsTree($menu);
+            }
+            $menus = $moduleMenus;
 
             // 非开发模式，缓存菜单
             if (config('develop_mode') == 0) {
@@ -154,6 +174,7 @@ class Role extends Admin
         $this->assign('role_list', $role_list);
         $this->assign('module_list', MenuModel::where('pid', 0)->column('id,title'));
         $this->assign('menus', $menus);
+        $this->assign('curr_tab', current(array_keys($menus)));
         return $this->fetch();
     }
 
@@ -232,7 +253,7 @@ class Role extends Admin
             $role_list = RoleModel::getTree($id, '顶级角色');
         }
 
-        $modules = Db::name('admin_module')->where('status', 1)->column('name');
+        $modules = Db::name('admin_module')->where('status', 1)->column('name,title');
         $map     = [];
         // 非超级管理员角色，只能分配当前角色所拥有的权限
         if (session('user_auth.role') != 1) {
@@ -240,17 +261,37 @@ class Role extends Admin
             $menu_auth = json_decode($menu_auth, true);
             $map[]     = ['id', 'in', $menu_auth];
         }
-        $menus = MenuModel::where('module', 'in', $modules)
+
+        // 当前用户能分配的所有菜单
+        $menus = MenuModel::where('module', 'in', array_keys($modules))
             ->where($map)
-            ->order('sort,id')
-            ->column('id,pid,sort,url_value,title,icon');
-        $menus = Tree::toLayer($menus);
-        $menus = $this->buildJsTree($menus, $info);
+            ->order('module,sort,id')
+            ->column('id,pid,sort,url_value,title,icon,module');
+
+        // 按模块分组菜单
+        $moduleMenus = [];
+        foreach ($menus as $key => $menu) {
+            if (!isset($moduleMenus[$menu['module']])) {
+                $moduleMenus[$menu['module']] = [
+                    'title' => isset($modules[$menu['module']]) ? $modules[$menu['module']] : '未知',
+                    'menus' => [$menu]
+                ];
+            } else {
+                $moduleMenus[$menu['module']]['menus'][] = $menu;
+            }
+        }
+
+        // 层级化每个模块的菜单
+        foreach ($moduleMenus as $key => $module) {
+            $menu = Tree::toLayer($module['menus']);
+            $moduleMenus[$key]['menus'] = $this->buildJsTree($menu, $info);
+        }
 
         $this->assign('page_title', '编辑');
         $this->assign('role_list', $role_list);
         $this->assign('module_list', MenuModel::where('pid', 0)->column('id,title'));
-        $this->assign('menus', $menus);
+        $this->assign('menus', $moduleMenus);
+        $this->assign('curr_tab', current(array_keys($moduleMenus)));
         $this->assign('info', $info);
         return $this->fetch('edit');
     }
@@ -333,21 +374,54 @@ class Role extends Admin
      */
     public function setStatus($type = '', $record = [])
     {
-        $ids     = $this->request->isPost() ? input('post.ids/a') : input('param.ids');
-        $role_id = is_array($ids) ? 0 : $ids;
-        // 非超级管理员检查可管理角色
-        if (session('user_auth.role') != 1) {
-            $role_ids  = (array)$ids;
-            $role_list = RoleModel::getChildsId(session('user_auth.role'));
-            $role_list = array_intersect($role_list, $role_ids);
-            if (!$role_list) {
-                $this->error('权限不足，没有可操作的角色');
-            } else {
-                $this->request->post(['ids'=> $role_list]);
-            }
+        $ids = $this->request->isPost() ? input('post.ids/a') : input('param.ids');
+        $ids = (array)$ids;
+
+        // 当前角色所能操作的子角色
+        $role_list = RoleModel::getChildsId(session('user_auth.role'));
+        if (session('user_auth.role') != 1 && !$role_list) {
+            $this->error('权限不足，没有可操作的角色');
         }
-        $ids = RoleModel::where('id', 'in', $ids)->column('name');
-        return parent::setStatus($type, ['role_'.$type, 'admin_role', $role_id, UID, implode('、', $ids)]);
+
+        foreach ($ids as $id) {
+            if ($id == 1) {
+                // 跳过默认角色
+                continue;
+            }
+
+            // 非超级管理员检查可管理角色
+            if (session('user_auth.role') != 1) {
+                if (!in_array($id, $role_list)) {
+                    $this->error('权限不足，禁止操作角色ID：'.$id);
+                }
+            }
+
+            switch ($type) {
+                case 'enable':
+                    if (false === RoleModel::where('id', $id)->setField('status', 1)) {
+                        $this->error('启用失败，角色ID：'.$id);
+                    }
+                    break;
+                case 'disable':
+                    if (false === RoleModel::where('id', $id)->setField('status', 0)) {
+                        $this->error('禁用失败，角色ID：'.$id);
+                    }
+                    break;
+                case 'delete':
+                    $all_id = array_merge([$id], RoleModel::getChildsId($id));
+
+                    if (false === RoleModel::where('id', 'in', $all_id)->delete()) {
+                        $this->error('删除失败，角色ID：'.$id);
+                    }
+                    break;
+                default:
+                    $this->error('非法操作');
+            }
+
+            action_log('role_'.$type, 'admin_role', $id, UID);
+        }
+
+        $this->success('操作成功');
     }
 
     /**

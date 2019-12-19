@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
 
-    <title>跳转提示 | {:config('web_site_title')}</title>
+    <title>跳转提示 | {:config('web_site_title')} - DolphinPHP</title>
 
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0">
@@ -18,7 +18,7 @@
     <!-- Bootstrap and OneUI CSS framework -->
     <link rel="stylesheet" href="__ADMIN_CSS__/bootstrap.min.css">
     <link rel="stylesheet" href="__ADMIN_CSS__/oneui.css">
-    <link rel="stylesheet" href="__ADMIN_CSS__/ieasynet.css">
+    <link rel="stylesheet" href="__ADMIN_CSS__/dolphin.css">
     <!-- END Stylesheets -->
 </head>
 <body>
@@ -41,18 +41,31 @@
 </div>
 <!-- END Error Content -->
 
-
+<!-- Error Footer -->
+<div class="content pulldown text-muted text-center">
+    极简 · 极速 · 极致<br>
+    海豚PHP，让开发更简单！<br>
+    由 <a class="link-effect" href="http://www.dolphinphp.com">DolphinPHP</a> 强力驱动 <a class="link-effect" href="http://www.zrthink.com">卓锐软件</a> 倾情奉献
+</div>
+<!-- END Error Footer -->
 
 <script type="text/javascript">
     (function(){
-        var wait = document.getElementById('wait'),
-            href = document.getElementById('href').href;
-        var interval = setInterval(function(){
-            var time = --wait.innerHTML;
+        let wait  = document.getElementById('wait'),
+            href  = document.getElementById('href').href,
+            pop   = '{$Request.param._pop}'; //获取窗口索引
+
+        let interval = setInterval(function(){
+            let time = --wait.innerHTML;
             if(time <= 0) {
-                location.href = href;
+                if (pop === '1') {
+                    let index = parent.layer.getFrameIndex(window.name);
+                    parent.layer.close(index);
+                } else {
+                    location.href = href;
+                }
                 clearInterval(interval);
-            };
+            }
         }, 1000);
 
         // 禁止跳转

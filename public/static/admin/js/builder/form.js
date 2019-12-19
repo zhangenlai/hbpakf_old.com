@@ -1082,6 +1082,13 @@ jQuery(document).ready(function() {
 
     // 关闭弹窗按钮
     $('#close-pop').click(function () {
+        try {
+            if(typeof window.layer_cancel === "function") {
+                window.layer_cancel();
+            }
+        } catch(e) {
+
+        }
         // 获取窗口索引
         var index = parent.layer.getFrameIndex(window.name);
         parent.layer.close(index);

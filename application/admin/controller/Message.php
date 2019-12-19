@@ -43,8 +43,8 @@ class Message extends Admin
                 ['type', '分类'],
                 ['content', '内容'],
                 ['status', '状态', 'status', '', ['未读', '已读']],
-                ['create_time', '发送时间'],
-                ['read_time', '阅读时间','datetime'],
+                ['create_time', '发送时间', 'datetime'],
+                ['read_time', '阅读时间', 'datetime'],
                 ['right_button', '操作', 'btn'],
             ])
             ->addFilter('type')

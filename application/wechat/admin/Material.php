@@ -18,6 +18,24 @@ class Material extends Admin
     // 永久素材列表
     public function index()
     {
+        $app = $this->wechatApp;
+        //获取客服列表
+//        $kefu = $app->customer_service->list();
+
+        //创建客服会话   $kefu['kf_list'][0]['kf_account']
+//        $res = $app->customer_service_session->create('kf2001@xuanhuaShop', 'okp3m1AEBQGNijjqgVpqOsuc6A60');
+        //获取会话状态
+        $res = $app->customer_service_session->get('okp3m1AEBQGNijjqgVpqOsuc6A60');
+        //获取客服会话列表
+        $res = $app->customer_service_session->list('kf2001@xuanhuaShop');
+        //发送客服消息
+        $res = $app->customer_service->message('123')->from('kf2001@xuanhuaShop')
+                                ->to('okp3m1AEBQGNijjqgVpqOsuc6A60')
+                              ->send();
+        dump($res);
+
+
+        die;
         cookie('__forward__', $_SERVER['REQUEST_URI']);
 
         // 获取查询条件
@@ -105,6 +123,7 @@ class Material extends Admin
                     ];
                     $article = new Article($article_data);
                     $result_article = $this->wechatApp->material->uploadArticle($article);
+                    
                     $data['media_id'] = $result_article['media_id'];
                     $data['attachment_id'] = $post['article_cover_pic'];
                     $data['content'] = json_encode($article_data);

@@ -45,7 +45,22 @@ class Index extends Home
         $wechatConfig = module_config('wechat');
         $wechatConfig = array_merge($wechatConfig,$options);
         $this->app = Factory::officialAccount($wechatConfig);
-
+        //发送模板消息（测试）
+//            $res = $this->app->template_message->send([
+//                'touser' => 'user-openid',
+//                'template_id' => 'template-id',
+//                'url' => 'https://easywechat.org',
+//                'miniprogram' => [
+//                    'appid' => 'xxxxxxx',
+//                    'pagepath' => 'pages/xxx',
+//                ],
+//                'data' => [
+//                    'key1' => 'VALUE',
+//                    'key2' => 'VALUE2'
+//            ],
+//        ]);
+//
+//        dump($res);die;
         $this->app->server->push(function ($message) {
             if ($message['MsgType'] == 'event') {
                 $class = '\\app\\wechat\\home\\Event';

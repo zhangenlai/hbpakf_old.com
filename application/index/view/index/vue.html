@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Vue</title>
+</head>
+<style>
+    [v-cloak] {
+        display:none;
+    }
+</style>
+<body>
+    <div id="app" v-cloak>
+        <span>{{count}}</span>
+        <button @click="counta">+1</button>
+    </div>
+</body>
+</html>
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script>
+    var padDate = function(value){
+        return value < 10 ? '0' + value : value;
+    }
+    Vue.component('my-comment',{
+        template:'<div>template</div>'
+    });
+    var app = new Vue({
+        el: '#app',
+        data: {
+            count:1,
+            type:'name',
+            books:[
+                {name:'123'},
+                {name:'234'},
+                {name:'345'},
+            ]
+        },
+        mounted:function(){
+
+        },
+        methods:{
+            counta:function(event){
+                console.log(event);
+            }
+        }
+    })
+    app.books = app.books.filter(function(item){
+        return item.name.match('2');
+    })
+
+</script>

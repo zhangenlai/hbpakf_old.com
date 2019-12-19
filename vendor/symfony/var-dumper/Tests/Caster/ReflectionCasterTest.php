@@ -68,14 +68,11 @@ EOTXT
         $var = function ($x) use ($a, &$b) {};
 
         $this->assertDumpMatchesFormat(
-            <<<EOTXT
-Closure {
-%Aparameters: {
-    \$x: {}
-  }
-  use: {
-    \$a: 123
-    \$b: & 123
+            <<<'EOTXT'
+Closure($x) {
+%Ause: {
+    $a: 123
+    $b: & 123
   }
   file: "%sReflectionCasterTest.php"
   line: "68 to 68"
@@ -92,19 +89,20 @@ EOTXT
         }
         $var = [
             (new \ReflectionMethod($this, __FUNCTION__))->getClosure($this),
-            (new \ReflectionMethod(__CLASS__, 'tearDownAfterClass'))->getClosure(),
+            (new \ReflectionMethod(__CLASS__, 'stub'))->getClosure(),
         ];
 
         $this->assertDumpMatchesFormat(
             <<<EOTXT
 array:2 [
-  0 => Symfony\Component\VarDumper\Tests\Caster\ReflectionCasterTest::testFromCallableClosureCaster {
+  0 => Symfony\Component\VarDumper\Tests\Caster\ReflectionCasterTest::testFromCallableClosureCaster() {
     this: Symfony\Component\VarDumper\Tests\Caster\ReflectionCasterTest { …}
     file: "%sReflectionCasterTest.php"
     line: "%d to %d"
   }
-  1 => %sTestCase::tearDownAfterClass {
-    file: "%sTestCase.php"
+  1 => Symfony\Component\VarDumper\Tests\Caster\ReflectionCasterTest::stub(): void {
+    returnType: "void"
+    file: "%sReflectionCasterTest.php"
     line: "%d to %d"
   }
 ]
@@ -115,16 +113,9 @@ EOTXT
 
     public function testClosureCasterExcludingVerbosity()
     {
-        $var = function () {};
+        $var = function &($a = 5) {};
 
-        $expectedDump = <<<EOTXT
-Closure {
-  class: "Symfony\Component\VarDumper\Tests\Caster\ReflectionCasterTest"
-  this: Symfony\Component\VarDumper\Tests\Caster\ReflectionCasterTest { …}
-}
-EOTXT;
-
-        $this->assertDumpEquals($expectedDump, $var, Caster::EXCLUDE_VERBOSE);
+        $this->assertDumpEquals('Closure&($a = 5) { …5}', $var, Caster::EXCLUDE_VERBOSE);
     }
 
     public function testReflectionParameter()
@@ -144,9 +135,6 @@ EOTXT
         );
     }
 
-    /**
-     * @requires PHP 7.0
-     */
     public function testReflectionParameterScalar()
     {
         $f = eval('return function (int $a) {};');
@@ -164,9 +152,6 @@ EOTXT
         );
     }
 
-    /**
-     * @requires PHP 7.0
-     */
     public function testReturnType()
     {
         $f = eval('return function ():int {};');
@@ -174,7 +159,7 @@ EOTXT
 
         $this->assertDumpMatchesFormat(
             <<<EOTXT
-Closure {
+Closure(): int {
   returnType: "int"
   class: "Symfony\Component\VarDumper\Tests\Caster\ReflectionCasterTest"
   this: Symfony\Component\VarDumper\Tests\Caster\ReflectionCasterTest { …}
@@ -186,9 +171,6 @@ EOTXT
         );
     }
 
-    /**
-     * @requires PHP 7.0
-     */
     public function testGenerator()
     {
         if (\extension_loaded('xdebug')) {
@@ -262,6 +244,10 @@ Generator {
 }
 EODUMP;
         $this->assertDumpMatchesFormat($expectedDump, $generator);
+    }
+
+    public static function stub(): void
+    {
     }
 }
 

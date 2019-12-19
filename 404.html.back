@@ -1,0 +1,57 @@
+
+<!--欢迎加入域名公益网404公益项目-->
+<!-- 复制代码到你的网站中，可自由修改页面代码，如果能保留链接，我们会很感激-->  
+<!-- 如果你有闲置域名请以cname的方式指向到DO.DNPW.ORG参与域名公益-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="robots" content="noarchive,noindex">
+<title>404 Not Found</title><base target="_blank"/>
+<link href="https://cdn.dnpw.org/project/404/5/5.css" rel="stylesheet" type="text/css"/>
+<script src="https://mat1.gtimg.com/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.dnpw.org/project/404/5/dnpw.org.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="ne_404_2">
+	<div class="common_wrap" style="height: 774px;">
+		<div class="ne_404_share">
+              <a href="https://www.dnpw.org/cn/pa-notfound.html" target="_blank"><img src="https://cdn.dnpw.org/project/404/common/img/logos-fff.png"></a>
+		</div>
+		<div class="ne_404_main2">
+			<h1>404您访问的页面找不回来了！</h1>
+			<div class="back">
+				<a href="/"><<返回首页</a>
+			</div>
+			<h2>但他们还可以找到自己的家人...</h2>
+			<div class="ne_404_switch" id="ne_404_switch">
+				<input type="hidden" id="sharetx" class="sharetx" value="域名公益"/>
+				<span class="ne_404_info_ico"></span>
+				<!-- 循环列表开始 -->
+				<!--循环结束-->
+			</div>
+		</div>
+		<div class="ne_404_list_wrap ne_404_list_wrap2">
+			<div class="ne_404_list ne_404_list2">
+				<div class="ne_404_ctrls_scroll" id="ne_404_ctrls_scroll">
+					<a class="scroll_prev">&lt;</a>
+					<a class="scroll_next">&gt;</a>
+					<div class="scroll_body">
+						<ul id="ne_404_ctrls">
+							<!-- 循环列表开始 -->
+							<!--循环结束-->
+						</ul>
+					</div>
+				</div>
+				<div class="list_info">
+					<p> 域名公益旨在号召全世界的闲置域名指向到域名公益，通过在线广告以及其他附带服务产生收益，并将其转捐给联合国儿童基金会的全球公益项目；如果你有闲置域名，请使用CNAME方式把它指向 DO.DNPW.ORG 即可参与本公益。
+						<span><a href="https://www.dnpw.org/" target="_blank">前往了解</a></span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="https://cdn.dnpw.org/project/404/5/5.js?2019" charset="utf-8"></script>
+</body>
+</html>

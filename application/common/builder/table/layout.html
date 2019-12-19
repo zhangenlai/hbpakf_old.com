@@ -1,10 +1,10 @@
 {extend name="$_admin_base_layout" /}
 
 {block name="content"}
-    {notempty name="page_tips"}
+    {notempty name="page_tips_top"}
     <div class="alert alert-{$tips_type} alert-dismissable">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-        <p>{$page_tips|raw}</p>
+        <p>{$page_tips_top|raw}</p>
     </div>
     {/notempty}
     <div class="row">
@@ -79,7 +79,7 @@
                                 <div class="col-md-{$_search_area_layout[$vo.1]|default='3'} col-xs-12 push">
                                     <div class="input-group">
                                         <span class="input-group-addon">{$vo.2|default=''}</span>
-                                        <input class="js-daterangepicker form-control" type="text" id="search_{$vo.1|default=''}" name="{$vo.1|default=''}" value="{$vo.4|default=''}" placeholder="{$vo.2|default=''}" {$vo.5|default=""}>
+                                        <input class="js-daterangepicker form-control" type="text" id="search_{$vo.1|default=''}" name="{$vo.1|default=''}" value="{$vo.4|default=''}" placeholder="{$vo.2|default=''}" {$vo.5|raw|default=""}>
                                     </div>
                                 </div>
                                 {/case}
@@ -555,6 +555,12 @@
             {$extra_html_block_bottom|raw|default=''}
         </div>
     </div>
+    {notempty name="page_tips_bottom"}
+    <div class="alert alert-{$tips_type} alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <p>{$page_tips_bottom|raw}</p>
+    </div>
+    {/notempty}
 {/block}
 
 {block name="style"}
@@ -626,7 +632,11 @@
 
             {switch name="builder_height"}
             {case value="fixed"}
-            $('#builder-table-wrapper').css('max-height', ($(window).height() - 380)+'px');
+                {empty name="_pop"}
+                $('#builder-table-wrapper').css('max-height', ($(window).height() - 340)+'px');
+                {else/}
+                $('#builder-table-wrapper').css('max-height', ($(window).height() - 160)+'px');
+                {/empty}
             {/case}
             {case value="auto"}{/case}
             {default/}

@@ -18,7 +18,7 @@ use app\common\model\Plugin;
 class HelloWorld extends Plugin
 {
     // 设置当前模型对应的完整数据表名称
-    protected $name = 'plugin_poetry';
+    protected $name = 'plugin_hello';
 
     public function test()
     {

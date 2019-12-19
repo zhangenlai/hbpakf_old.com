@@ -10,6 +10,11 @@
 // [ 应用入口文件 ]
 namespace think;
 
+header("Access-Control-Allow-Origin:*");
+header("Access-Control-Allow-Methods:GET, POST, OPTIONS, DELETE");
+header("Access-Control-Allow-Headers:DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type, Accept-Language, Origin, Accept-Encoding");
+
+
 // [ PHP版本检查 ]
 header("Content-type: text/html; charset=utf-8");
 if (version_compare(PHP_VERSION, '5.6', '<')) {
@@ -19,8 +24,6 @@ if (version_compare(PHP_VERSION, '5.6', '<')) {
 // 定义后台入口文件
 define('ADMIN_FILE', 'admin.php');
 
-// 自定义日志目录
-define('LOG_PATH', __DIR__ . '');
 // 加载基础文件
 require __DIR__ . '/../thinkphp/base.php';
 

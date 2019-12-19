@@ -52,6 +52,10 @@ class Event extends Home
             'role' => '2', //公众号用户
             'status' => 1,
         ];
+        //如果存在unionid的话
+        if (!empty($user['unionid'])){
+            $userData['unionid'] = $user['unionid'];
+        }
         $userModel = new User();
         $userData['signup_ip'] = $userModel->setSignupIpAttr();
         //查询是否已存在
